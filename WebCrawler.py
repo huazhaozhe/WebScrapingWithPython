@@ -5,12 +5,33 @@
 # @FileName : WebCrawler.py
 # @Project  : PyCharm
 
-from urllib.request import urlopen
+from urllib.request import urlopen, HTTPError
 from bs4 import BeautifulSoup
 import re
+import random
+import datetime
 
-html = urlopen('https://en.wikipedia.org/wiki/Kevin_Bacon')
-bsObj = BeautifulSoup(html)
-for link in bsObj.find('div', {'id': 'bodyContent'}).findAll('a', href=re.compile('^(/wiki/)((?!:).*$)')):
-    if 'href' in link.attrs:
-        print(link.attrs['href'])
+random.seed(datetime.datetime.now())
+
+
+def getLink(articleUrl):
+    try:
+        html = urlopen('http://en.wikipedia.org' + articleUrl)
+    except HTTPError as e:
+        print(e)
+        return
+    bsObj = BeautifulSoup(html)
+    return bsObj.find(
+        'div',
+        {'id': 'bodyContent'}
+    ).findAll(
+        'a',
+        href=re.compile('^(/wiki/)((?!:).*$)')
+    )
+
+
+links = getLink('/wiki/Kevin_Bacon')
+while len(links) > 0:
+    newArticle = links[random.randint(0, len(links) - 1)].attrs['href']
+    print(newArticle)
+    links = getLink(newArticle)
