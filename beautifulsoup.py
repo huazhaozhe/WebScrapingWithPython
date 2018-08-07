@@ -12,6 +12,7 @@ from config import *
 
 html = urlopen('http://www.pythonscraping.com/pages/page3.html')
 bsObj = BeautifulSoup(html)
-imgList = bsObj.findAll('img', {'src': re.compile('\.\.\/img\/gifts/img.*\.jpg')})
-for img in imgList:
-    print(img)
+
+for tag in bsObj.findAll(lambda tag:str(tag).startswith('<img') and len(tag.attrs)==2):
+    print(tag)
+
