@@ -7,10 +7,11 @@
 
 from urllib.request import urlopen, HTTPError
 from bs4 import BeautifulSoup
+import re
 from config import *
 
-html = urlopen('http://www.pythonscraping.com/pages/warandpeace.html')
+html = urlopen('http://www.pythonscraping.com/pages/page3.html')
 bsObj = BeautifulSoup(html)
-nameList = bsObj.findAll('span', {'class': ['green', ]})
-for name in nameList:
-    print(name.get_text())
+imgList = bsObj.findAll('img', {'src': re.compile('\.\.\/img\/gifts/img.*\.jpg')})
+for img in imgList:
+    print(img)
