@@ -5,11 +5,12 @@
 # @FileName : beautifulsoup.py
 # @Project  : PyCharm
 
-from urllib.request import urlopen
+from urllib.request import urlopen, HTTPError
 from bs4 import BeautifulSoup
 from config import *
 
-
-html = urlopen(mysite_https)
-bsObj = BeautifulSoup(html.read())
-print(bsObj.meta)
+html = urlopen('http://www.pythonscraping.com/pages/warandpeace.html')
+bsObj = BeautifulSoup(html)
+nameList = bsObj.findAll('span', {'class': ['green', ]})
+for name in nameList:
+    print(name.get_text())
