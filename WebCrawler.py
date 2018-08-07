@@ -8,30 +8,18 @@
 from urllib.request import urlopen, HTTPError
 from bs4 import BeautifulSoup
 import re
-import random
-import datetime
 
-random.seed(datetime.datetime.now())
-
-
-def getLink(articleUrl):
-    try:
-        html = urlopen('http://en.wikipedia.org' + articleUrl)
-    except HTTPError as e:
-        print(e)
-        return
+pages = set()
+def getLink(pageUrl):
+    global pages
+    html = urlopen('http://en.wikipedia.org'+pageUrl)
     bsObj = BeautifulSoup(html)
-    return bsObj.find(
-        'div',
-        {'id': 'bodyContent'}
-    ).findAll(
-        'a',
-        href=re.compile('^(/wiki/)((?!:).*$)')
-    )
-
-
-links = getLink('/wiki/Kevin_Bacon')
-while len(links) > 0:
-    newArticle = links[random.randint(0, len(links) - 1)].attrs['href']
-    print(newArticle)
-    links = getLink(newArticle)
+    for link in bsObj.findAll('a', href=re.compile('^(/wiki/)')):
+        if 'href' in link.attrs:
+            if link.attrs['href'] not in pages:
+                newPage = link.attrs['href']
+                print(newPage)
+                pages.add(newPage)
+                getLink(newPage)
+getLink('')
+print(pages)
