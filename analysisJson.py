@@ -9,9 +9,12 @@ import json
 from urllib.request import urlopen
 from config import *
 
+
 def getCounttry(ip):
-    url = 'http://api.ipstack.com/'+ip+'?access_key='+ipstacKey
+    url = 'http://api.ipstack.com/' + ip + '?access_key=' + ipstacKey
     response = urlopen(url).read().decode()
     responseJson = json.loads(response)
     return responseJson.get('country_code')
+
+
 print(getCounttry('50.78.253.58'))
