@@ -12,7 +12,13 @@ import re
 pages = set()
 def getLink(pageUrl):
     global pages
-    html = urlopen('http://en.wikipedia.org'+pageUrl)
+    url = 'http://en.wikipedia.org' + pageUrl
+    try:
+        html = urlopen(url)
+    except HTTPError as e:
+        print(e, pageUrl)
+        pages.remove(pageUrl)
+        return
     bsObj = BeautifulSoup(html)
     for link in bsObj.findAll('a', href=re.compile('^(/wiki/)')):
         if 'href' in link.attrs:
