@@ -207,3 +207,4 @@ $RECYCLE.BIN/
 config.py
 cookie.txt
 /phantomjs-2.1.1-windows
+*.xls
