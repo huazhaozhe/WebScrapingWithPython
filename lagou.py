@@ -12,11 +12,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from collections import OrderedDict
 from random import randint
-from xlutils import copy
 import os
 import time
-import xlrd
-import xlwt
+import openpyxl
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -25,21 +23,13 @@ chromedriver_path = os.path.join(BASE_DIR, 'chromedriver.exe')
 
 class Lagou():
 
-    def __init__(self, driver_path, start_url, page_max, xls_name, sheet_name):
+    def __init__(self, driver_path, start_url, page_max, xlsx_name,
+                 sheet_name):
         self.driver_path = driver_path
         self.start_url = start_url
-        self.line = 0
-        self.xls_name = xls_name + '.xls'
-        if os.path.exists(os.path.join(BASE_DIR, self.xls_name)):
-            self.xls = copy.copy(
-                xlrd.open_workbook(os.path.join(BASE_DIR, self.xls_name)))
-            try:
-                self.sheet = self.xls.add_sheet(sheet_name)
-            except:
-                self.sheet = self.xls.get_sheet(sheet_name)
-        else:
-            self.xls = xlwt.Workbook()
-            self.sheet = self.xls.add_sheet(sheet_name)
+        self.row = 1
+        self.xlsx_name = xlsx_name + '.xlsx'
+        self.sheet_name = sheet_name
         self.page_max = page_max
 
     def job_info(self):
@@ -71,23 +61,40 @@ class Lagou():
                 './/div[@class="list_item_bot"]/div[@class="li_b_r"]').text
         return info
 
-    def write_to_xls(self, info):
-        for k1, v1 in info.items():
-            row = 0
-            for k2, v2 in v1.items():
-                self.sheet.write(self.line, row, v2)
-                row += 1
-            self.line += 1
+    def xlsx_init(self):
+        if os.path.exists(os.path.join(BASE_DIR, self.xlsx_name)):
+            self.xlsx = openpyxl.load_workbook(
+                os.path.join(BASE_DIR, self.xlsx_name))
+        else:
+            self.xlsx = openpyxl.Workbook()
+            del self.xlsx['Sheet']
+        try:
+            sheet = self.xlsx[self.sheet_name]
+            self.xlsx.remove(sheet)
+        except:
+            pass
+        finally:
+            self.xlsx.create_sheet(self.sheet_name)
+            self.sheet = self.xlsx[self.sheet_name]
 
-    def xls_save(self):
-        self.xls.save(os.path.join(BASE_DIR, self.xls_name))
+    def write_to_xlsx(self, info):
+        for k1, v1 in info.items():
+            column = 1
+            for k2, v2 in v1.items():
+                self.sheet.cell(row=self.row, column=column).value = v2
+                column += 1
+            self.row += 1
+
+    def xlsx_save(self):
+        self.xlsx.save(os.path.join(BASE_DIR, self.xlsx_name))
 
     def main(self):
         self.driver = webdriver.Chrome(executable_path=self.driver_path)
         self.driver.get(self.start_url)
+        self.xlsx_init()
         time.sleep(randint(5, 10))
         info = self.job_info()
-        self.write_to_xls(info)
+        self.write_to_xlsx(info)
         time.sleep(randint(3, 10))
         page_list = self.driver.find_elements_by_xpath(
             '//div[@class="pager_container"]/span[@class="pager_not_current"]')
@@ -105,12 +112,12 @@ class Lagou():
                 ).click()
                 time.sleep(randint(5, 10))
                 info = self.job_info()
-                self.write_to_xls(info)
+                self.write_to_xlsx(info)
         except Exception as e:
             print(e)
         finally:
             self.driver.close()
-            self.xls_save()
+            self.xlsx_save()
 
 
 if __name__ == '__main__':
@@ -121,7 +128,7 @@ if __name__ == '__main__':
         '''https://www.lagou.com/jobs/list_%E5%89%8D%E7%AB%AF
         ?gj=3%E5%B9%B4%E5%8F%8A%E4%BB%A5%E4%B8%8B&px=new
         &city=%E6%88%90%E9%83%BD#order''',
-        5,
+        10,
         'html',
         '1-3'
     )
@@ -129,7 +136,7 @@ if __name__ == '__main__':
         chromedriver_path,
         '''https://www.lagou.com/jobs/list_%E5%89%8D%E7%AB%AF
         ?px=new&city=%E6%88%90%E9%83%BD#order''',
-        5,
+        10,
         'html',
         'all'
     )
@@ -137,7 +144,7 @@ if __name__ == '__main__':
         chromedriver_path,
         '''https://www.lagou.com/jobs/list_python
         ?px=new&city=%E6%88%90%E9%83%BD#order''',
-        4,
+        10,
         'python',
         'all'
     )
@@ -147,7 +154,7 @@ if __name__ == '__main__':
         '''https://www.lagou.com/jobs/list_python
         ?px=new&gj=3%E5%B9%B4%E5%8F%8A%E4%BB%A5%E4%B8%8B
         &city=%E6%88%90%E9%83%BD#filterBox''',
-        4,
+        10,
         'python',
         '1-3'
     )
