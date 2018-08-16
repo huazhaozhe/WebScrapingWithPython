@@ -92,10 +92,14 @@ class Lagou():
         self.driver = webdriver.Chrome(executable_path=self.driver_path)
         self.driver.get(self.start_url)
         self.xlsx_init()
-        time.sleep(randint(5, 10))
+        element = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.XPATH,
+                                            '//li[@class="con_list_item first_row default_list"]')))
+        self.driver.execute_script(
+            "window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(randint(1, 3))
         info = self.job_info()
         self.write_to_xlsx(info)
-        time.sleep(randint(3, 10))
         page_list = self.driver.find_elements_by_xpath(
             '//div[@class="pager_container"]/span[@class="pager_not_current"]')
         page_max = 0
@@ -108,9 +112,15 @@ class Lagou():
         try:
             for i in range(2, page_max + 1):
                 self.driver.find_element_by_xpath(
-                    '//div[@class="pager_container"]/span[@page="%s"]' % str(i)
+                    '//div[@class="pager_container"]/span[@class="pager_not_current" and @page="%s"]' % str(
+                        i)
                 ).click()
-                time.sleep(randint(5, 10))
+                elements = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_all_elements_located((By.XPATH,
+                                                         '//li[@class="con_list_item default_list"]')))
+                self.driver.execute_script(
+                    "window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(randint(1, 3))
                 info = self.job_info()
                 self.write_to_xlsx(info)
         except Exception as e:
